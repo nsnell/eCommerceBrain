@@ -1,4 +1,4 @@
-# Brand Brain
+# Self Improving AI Brain for your DTC brand
 
 A knowledge system for ecommerce marketing that compounds over time. You feed it raw information about your brand, customers, and competitors. It organizes that into structured pages. Skills read those pages before producing any output, so everything they create is grounded in what you actually know -- not generic best practices.
 
