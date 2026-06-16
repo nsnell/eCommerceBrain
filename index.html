@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>eCommerce Brain · A self-learning brain for DTC brands</title>
+<meta name="description" content="An open-source agent framework that holds your brand's knowledge and builds its own skills from how you work. Runs in Claude Code or Codex." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FBFAF7;
+    --surface: #FFFFFF;
+    --surface-soft: #F4F2EC;
+    --ink: #18181B;
+    --ink-soft: #52525B;
+    --ink-muted: #A1A1AA;
+    --line: rgba(24, 24, 27, 0.07);
+    --line-strong: rgba(24, 24, 27, 0.12);
+    --accent: #2D5A4B;
+    --accent-soft: rgba(45, 90, 75, 0.08);
+    --accent-tint: #E8EFEC;
+
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    --r-sm: 8px;
+    --r: 12px;
+    --r-lg: 20px;
+    --r-pill: 999px;
+
+    --shadow-card: 0 1px 2px rgba(24,24,27,0.04), 0 8px 24px rgba(24,24,27,0.04);
+    --shadow-card-lg: 0 2px 4px rgba(24,24,27,0.05), 0 20px 50px rgba(24,24,27,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16.5px;
+    line-height: 1.55;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 28px; }
+
+  /* nav */
+  nav.top {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(251, 250, 247, 0.85);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.top .inner {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600;
+    font-size: 15.5px;
+    letter-spacing: -0.01em;
+  }
+  .logo-mark {
+    width: 26px; height: 26px;
+    background: var(--accent);
+    border-radius: 8px;
+    position: relative;
+  }
+  .logo-mark::before, .logo-mark::after {
+    content: '';
+    position: absolute;
+    background: var(--bg);
+    border-radius: 50%;
+  }
+  .logo-mark::before { width: 7px; height: 7px; top: 6px; left: 6px; }
+  .logo-mark::after { width: 5px; height: 5px; bottom: 7px; right: 7px; }
+  nav .links { display: flex; align-items: center; gap: 28px; font-size: 14.5px; color: var(--ink-soft); }
+  nav .links a { transition: color .15s; }
+  nav .links a:hover { color: var(--ink); }
+  @media (max-width: 640px) {
+    nav .links a:not(.btn) { display: none; }
+  }
+
+  /* buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 500;
+    border-radius: var(--r-pill);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all .18s ease;
+    line-height: 1;
+  }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-primary:hover { background: var(--accent); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line-strong);
+  }
+  .btn-ghost:hover { background: var(--surface); border-color: var(--ink); }
+  .btn-lg { padding: 14px 24px; font-size: 15px; }
+  .btn .arr { transition: transform .2s; display: inline-block; }
+  .btn:hover .arr { transform: translateX(3px); }
+
+  /* hero */
+  .hero {
+    padding: 80px 28px 32px;
+    text-align: center;
+    max-width: 1160px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px 6px 8px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-card);
+  }
+  .eyebrow .pip {
+    width: 18px; height: 18px;
+    background: var(--accent-tint);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  h1.headline {
+    font-weight: 500;
+    font-size: clamp(40px, 6.2vw, 72px);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    max-width: 18ch;
+    margin: 0 auto 24px;
+  }
+  h1.headline em {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+  .lede {
+    font-size: 18.5px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 56ch;
+    margin: 0 auto 38px;
+  }
+  .cta-row {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .micro {
+    font-size: 13px;
+    color: var(--ink-muted);
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .micro span { display: inline-flex; align-items: center; gap: 6px; }
+  .micro span:not(:first-child)::before {
+    content: '';
+    width: 4px; height: 4px;
+    background: var(--ink-muted);
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+
+  /* hero mockup */
+  .mockup-wrap {
+    max-width: 1080px;
+    margin: 64px auto 0;
+    padding: 0 28px;
+    position: relative;
+  }
+  .mockup-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 30% -40px -40px -40px;
+    background: radial-gradient(60% 80% at 50% 50%, var(--accent-soft), transparent 70%);
+    z-index: -1;
+    filter: blur(40px);
+  }
+  .mockup {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card-lg);
+  }
+  .mockup-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .mockup-bar .traffic { display: flex; gap: 7px; }
+  .mockup-bar .traffic span { width: 11px; height: 11px; border-radius: 50%; background: #E5E5E0; }
+  .mockup-bar .url {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-muted);
+    background: var(--surface);
+    padding: 6px 14px;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--line);
+  }
+  .mockup-bar .url span { color: var(--ink-soft); }
+  .mockup-bar .spacer { width: 50px; }
+
+  .mock-body {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 560px;
+  }
+  @media (max-width: 720px) {
+    .mock-body { grid-template-columns: 1fr; min-height: auto; }
+  }
+
+  /* sidebar (file tree) */
+  .mock-side {
+    background: #FBFAF7;
+    border-right: 1px solid var(--line);
+    padding: 20px 14px;
+    font-size: 13px;
+  }
+  @media (max-width: 720px) {
+    .mock-side { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+  .mock-side .brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 8px 18px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .mock-side .brand .dot {
+    width: 20px; height: 20px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 11px; font-weight: 700;
+  }
+  .mock-side .brand .name {
+    font-weight: 600;
+    font-size: 13.5px;
+  }
+  .mock-side .brand .sub {
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 1px;
+  }
+  .mock-tree { padding-top: 12px; }
+  .mock-tree-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    padding: 0 8px;
+    margin: 14px 0 6px;
+    font-weight: 500;
+  }
+  .mock-tree-label:first-child { margin-top: 0; }
+  .mock-folder {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    color: var(--ink-soft);
+    border-radius: 5px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+  .mock-folder .chev { width: 10px; color: var(--ink-muted); display: inline-flex; }
+  .mock-folder.active { background: var(--accent-tint); color: var(--accent); font-weight: 500; }
+  .mock-folder .ico { width: 13px; height: 13px; flex-shrink: 0; color: var(--ink-muted); }
+  .mock-folder.active .ico { color: var(--accent); }
+  .mock-file {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 8px 4px 28px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-muted);
+    border-radius: 5px;
+  }
+  .mock-file.new { color: var(--accent); }
+  .mock-file.new::after {
+    content: '+';
+    margin-left: auto;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--sans);
+    font-size: 10px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 600;
+  }
+
+  /* chat panel */
+  .mock-chat { display: flex; flex-direction: column; min-width: 0; }
+  .mock-chat-bar {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .mock-chat-bar .ctx {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .mock-chat-bar .ctx .badge {
+    background: var(--accent-tint);
+    color: var(--accent);
+    padding: 2px 9px;
+    border-radius: var(--r-pill);
+    font-size: 11px;
+    font-weight: 500;
+    font-family: var(--mono);
+  }
+  .mock-chat-bar .right {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11.5px;
+    color: var(--ink-muted);
+  }
+  .mock-chat-bar .right .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .mock-chat-body {
+    padding: 24px 28px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex; flex-direction: column; gap: 18px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  @media (max-width: 560px) { .mock-chat-body { padding: 18px 18px; } }
+
+  .msg { display: flex; gap: 12px; max-width: 100%; }
+  .avatar {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .avatar.you {
+    background: var(--surface-soft);
+    color: var(--ink-soft);
+  }
+  .avatar.ai {
+    background: var(--accent);
+    color: #fff;
+  }
+  .msg-content { min-width: 0; flex: 1; }
+  .msg-name {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .msg-bubble {
+    color: var(--ink);
+  }
+  .msg.you .msg-bubble {
+    background: var(--surface-soft);
+    padding: 10px 14px;
+    border-radius: 10px;
+    border-top-left-radius: 4px;
+    display: inline-block;
+  }
+
+  .tool-call {
+    background: #FBFAF7;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 12px 14px;
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .tool-call .tc-head {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    font-family: var(--sans);
+    font-weight: 500;
+  }
+  .tool-call .tc-head .check {
+    color: var(--accent);
+    background: var(--accent-tint);
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .tool-call ul { list-style: none; }
+  .tool-call li {
+    padding: 3px 0;
+    display: flex;
+    gap: 10px;
+  }
+  .tool-call li .plus {
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .tool-call li .what { color: var(--ink-soft); }
+  .tool-call li .what .file { color: var(--ink); }
+  .tool-call .tc-foot {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    font-family: var(--sans);
+    color: var(--ink-soft);
+    font-size: 12.5px;
+  }
+  .tool-call .tc-foot strong { color: var(--accent); font-weight: 600; }
+
+  .mock-input-bar {
+    border-top: 1px solid var(--line);
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 10px;
+    background: #FBFAF7;
+    flex-shrink: 0;
+  }
+  .mock-input {
+    flex: 1;
+    background: #fff;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    padding: 10px 18px;
+    font-size: 13.5px;
+    color: var(--ink-muted);
+  }
+  .mock-input-bar .send {
+    width: 34px; height: 34px;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* section base */
+  section { padding: 120px 0; }
+  @media (max-width: 720px) { section { padding: 80px 0; } }
+  .section-eyebrow {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-weight: 500;
+    font-size: clamp(32px, 4.4vw, 48px);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    margin-bottom: 18px;
+    max-width: 22ch;
+  }
+  .section-title em {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+  .section-lede {
+    font-size: 18px;
+    color: var(--ink-soft);
+    max-width: 60ch;
+    line-height: 1.55;
+  }
+  .section-head { text-align: center; max-width: 720px; margin: 0 auto 64px; }
+  .section-head .section-title, .section-head .section-lede { margin-left: auto; margin-right: auto; }
+
+  /* two pillars */
+  .pillars {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 820px) {
+    .pillars { grid-template-columns: 1fr 1fr; gap: 20px; }
+  }
+  .pillar {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 36px 36px 32px;
+    box-shadow: var(--shadow-card);
+  }
+  .pillar .num {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 22px;
+  }
+  .pillar h3 {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 14px;
+    max-width: 16ch;
+  }
+  .pillar h3 em {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+  .pillar p {
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    font-size: 15.5px;
+  }
+  .pillar .demo-line {
+    margin-top: 22px;
+    background: var(--surface-soft);
+    border-radius: var(--r);
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .pillar .demo-line .arr { color: var(--accent); }
+  .pillar .demo-line .you { color: var(--ink); }
+  .pillar .demo-line .acc { color: var(--accent); font-weight: 500; }
+
+  /* flywheel */
+  .flywheel-section { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .steps {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  @media (min-width: 700px) {
+    .steps { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1020px) {
+    .steps { grid-template-columns: repeat(5, 1fr); gap: 0; border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; background: var(--bg); }
+  }
+  .step {
+    padding: 28px 26px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  @media (min-width: 1020px) {
+    .step { border: none; border-right: 1px solid var(--line); border-radius: 0; }
+    .step:last-child { border-right: none; }
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: var(--accent-tint);
+    color: var(--accent);
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .step h4 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .step p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* behind */
+  .behind { background: var(--bg); }
+  .behind-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 56px;
+    align-items: center;
+  }
+  @media (min-width: 920px) {
+    .behind-grid { grid-template-columns: 0.9fr 1.1fr; gap: 80px; }
+  }
+  .term {
+    background: #1A1A1D;
+    border-radius: var(--r-lg);
+    border: 1px solid rgba(255,255,255,0.06);
+    overflow: hidden;
+    box-shadow: var(--shadow-card-lg);
+  }
+  .term-bar {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .term-bar .dots { display: flex; gap: 6px; }
+  .term-bar .dots span { width: 11px; height: 11px; border-radius: 50%; background: rgba(255,255,255,0.10); }
+  .term-bar .ttl { color: rgba(255,255,255,0.45); font-family: var(--mono); font-size: 11.5px; margin-left: 10px; }
+  .term-body {
+    padding: 22px 24px 28px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    color: #D4D4D0;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .term-body .pr { color: #7DB89F; }
+  .term-body .you { color: #F4F4F0; }
+  .term-body .ou { color: #8B8B85; }
+  .term-body .ok { color: #7DB89F; }
+  .term-body .ac { color: #C0D9CC; }
+  .term-body .dm { color: #565650; }
+
+  /* inventory */
+  .inv {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 820px) {
+    .inv { grid-template-columns: 1fr 1fr; gap: 20px; }
+  }
+  .inv-block {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 32px;
+    box-shadow: var(--shadow-card);
+  }
+  .inv-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .inv-head h4 {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .inv-head .count {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+  .inv-list { display: flex; flex-direction: column; }
+  .inv-list-item {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .inv-list-item:last-child { border-bottom: none; }
+  .inv-list-item .name {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .inv-list-item .desc {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* audience */
+  .aud-section { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .aud-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 820px) {
+    .aud-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+  }
+  .aud-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 32px;
+  }
+  .aud-card.no { background: transparent; border-style: dashed; }
+  .aud-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .aud-card.no h4 { color: var(--ink-muted); }
+  .aud-card ul { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .aud-card li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 15.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .aud-card li svg { flex-shrink: 0; margin-top: 5px; color: var(--accent); }
+  .aud-card.no li svg { color: var(--ink-muted); }
+
+  /* cta band */
+  .cta-band { padding: 100px 0; text-align: center; }
+  .cta-band h2 {
+    font-weight: 500;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+    margin: 0 auto 22px;
+  }
+  .cta-band h2 em {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+  .cta-band p {
+    font-size: 18px;
+    color: var(--ink-soft);
+    max-width: 52ch;
+    margin: 0 auto 36px;
+  }
+  .install-mini {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    padding: 8px 8px 8px 20px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-top: 28px;
+    box-shadow: var(--shadow-card);
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+  .install-mini .copy {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 7px 14px;
+    border-radius: var(--r-pill);
+    font-family: inherit;
+    font-size: 12.5px;
+    border: none;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .install-mini .copy:hover { background: var(--accent); }
+
+  /* footer */
+  footer {
+    padding: 40px 28px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-muted);
+    font-size: 13.5px;
+  }
+  footer .inner {
+    max-width: 1160px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  footer .links { display: flex; gap: 24px; }
+  footer .links a { transition: color .15s; }
+  footer .links a:hover { color: var(--ink); }
+  footer .copy-line { display: flex; align-items: center; gap: 8px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .mock-chat-body .msg,
+    .mock-chat-body .tool-call,
+    .mock-chat-body .tool-call li,
+    .mock-chat-body .tool-call .tc-foot,
+    .mock-chat-body .typing-row { opacity: 1 !important; transform: none !important; }
+  }
+
+  /* ─── hero chat animation ─── */
+  @keyframes chatIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes chatRowIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes typingPulse {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.35; }
+    40%           { transform: scale(1);   opacity: 1; }
+  }
+
+  .mock-chat-body .msg {
+    opacity: 0;
+    animation: chatIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  .mock-chat-body .msg:nth-of-type(1) { animation-delay: 0.5s; }
+  .mock-chat-body .msg:nth-of-type(2) { animation-delay: 1.5s; }
+  .mock-chat-body .msg:nth-of-type(3) { animation-delay: 4.4s; }
+  .mock-chat-body .msg:nth-of-type(4) { animation-delay: 5.6s; }
+
+  /* tool call rows stagger in inside AI message 1 */
+  .mock-chat-body .msg:nth-of-type(2) .tool-call li {
+    opacity: 0;
+    animation: chatRowIn 0.4s ease forwards;
+  }
+  .mock-chat-body .msg:nth-of-type(2) .tool-call li:nth-child(1) { animation-delay: 2.1s; }
+  .mock-chat-body .msg:nth-of-type(2) .tool-call li:nth-child(2) { animation-delay: 2.4s; }
+  .mock-chat-body .msg:nth-of-type(2) .tool-call li:nth-child(3) { animation-delay: 2.7s; }
+  .mock-chat-body .msg:nth-of-type(2) .tool-call li:nth-child(4) { animation-delay: 3.0s; }
+  .mock-chat-body .msg:nth-of-type(2) .tool-call .tc-foot {
+    opacity: 0;
+    animation: chatIn 0.4s ease forwards;
+    animation-delay: 3.4s;
+  }
+
+  /* typing indicator at the end */
+  .typing-row {
+    display: flex; gap: 12px;
+    opacity: 0;
+    animation: chatIn 0.4s ease forwards;
+    animation-delay: 7.0s;
+  }
+  .typing-row .avatar { background: var(--accent); color: #fff; }
+  .typing-bubble {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 12px 16px;
+    background: var(--surface-soft);
+    border-radius: 12px;
+    border-top-left-radius: 4px;
+  }
+  .typing-bubble span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--ink-muted);
+    animation: typingPulse 1.3s ease-in-out infinite;
+  }
+  .typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="inner">
+    <a href="#" class="logo">
+      <span class="logo-mark"></span>
+      <span>eCommerce Brain</span>
+    </a>
+    <div class="links">
+      <a href="#how">How it works</a>
+      <a href="#inside">What's inside</a>
+      <a href="#install" class="btn btn-primary">View on GitHub <span class="arr">→</span></a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">
+    <span class="pip">✦</span>
+    <span>Open source, runs in Claude Code &amp; Codex</span>
+  </div>
+  <h1 class="headline">A <em>self-improving</em> AI brain for your DTC brand.</h1>
+  <p class="lede">
+    A framework that runs inside Claude. It holds your brand's knowledge, learns from how you work, and quietly grows new skills tailored to your business. Stop re-explaining your brand to every new chat.
+  </p>
+  <div class="cta-row">
+    <a href="#install" class="btn btn-primary btn-lg">Get started free <span class="arr">→</span></a>
+    <a href="#how" class="btn btn-ghost btn-lg">See how it works</a>
+  </div>
+  <div class="micro">
+    <span>MIT licensed</span>
+    <span>No accounts, no SaaS</span>
+    <span>~1 hour to first output</span>
+  </div>
+</section>
+
+<div class="mockup-wrap">
+  <div class="mockup">
+    <div class="mockup-bar">
+      <div class="traffic"><span></span><span></span><span></span></div>
+      <div class="url"><span>claude.ai/</span>chat · acme-goods</div>
+      <div class="spacer"></div>
+    </div>
+    <div class="mock-body">
+      <aside class="mock-side">
+        <div class="brand">
+          <div class="dot">A</div>
+          <div>
+            <div class="name">Acme Goods</div>
+            <div class="sub">my-dtc-brand</div>
+          </div>
+        </div>
+
+        <div class="mock-tree">
+          <div class="mock-tree-label">Workspace</div>
+
+          <div class="mock-folder">
+            <span class="chev">▸</span>
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            raw/
+          </div>
+
+          <div class="mock-folder active">
+            <span class="chev">▾</span>
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            brain/
+          </div>
+          <div class="mock-file">index.md</div>
+          <div class="mock-file">segment-lapsed-buyers.md</div>
+          <div class="mock-file new">segment-gift-givers.md</div>
+          <div class="mock-file">concept-brand-voice.md</div>
+          <div class="mock-file">product-classic-tee.md</div>
+
+          <div class="mock-folder">
+            <span class="chev">▸</span>
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            skills/
+          </div>
+
+          <div class="mock-tree-label">Briefs</div>
+          <div class="mock-file" style="padding-left: 8px;">2026-04-12.md</div>
+          <div class="mock-file" style="padding-left: 8px;">2026-04-09.md</div>
+        </div>
+      </aside>
+
+      <div class="mock-chat">
+        <div class="mock-chat-bar">
+          <div class="ctx">
+            <span class="badge">Acme Goods</span>
+            <span>running in Claude</span>
+          </div>
+          <div class="right">
+            <span class="live-dot"></span>
+            <span>connected</span>
+          </div>
+        </div>
+
+        <div class="mock-chat-body">
+
+          <div class="msg you">
+            <div class="avatar you">N</div>
+            <div class="msg-content">
+              <div class="msg-name">You</div>
+              <div class="msg-bubble">Ingest the customer survey I just dropped in raw/</div>
+            </div>
+          </div>
+
+          <div class="msg ai">
+            <div class="avatar ai">✦</div>
+            <div class="msg-content">
+              <div class="msg-name">Claude · brain-ingest</div>
+              <div class="msg-bubble">
+                Reading <code style="font-family:var(--mono);font-size:12.5px;background:var(--surface-soft);padding:1px 6px;border-radius:4px;">raw/q1-customer-survey.csv</code> and decomposing into structured brain pages.
+                <div class="tool-call">
+                  <div class="tc-head">
+                    <span class="check">✓</span>
+                    <span>Brain updated</span>
+                  </div>
+                  <ul>
+                    <li><span class="plus">+</span><span class="what">created <span class="file">segment-gift-givers.md</span> (new segment, 14% of respondents)</span></li>
+                    <li><span class="plus">+</span><span class="what">updated <span class="file">segment-lapsed-buyers.md</span> (new objection pattern)</span></li>
+                    <li><span class="plus">+</span><span class="what">updated <span class="file">concept-brand-voice.md</span> (3 phrases customers use)</span></li>
+                    <li><span class="plus">+</span><span class="what">created <span class="file">source-2026-04-12-q1-survey.md</span></span></li>
+                  </ul>
+                  <div class="tc-foot"><strong>2 new pages, 3 updated.</strong> Ready for your next move.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="msg you">
+            <div class="avatar you">N</div>
+            <div class="msg-content">
+              <div class="msg-name">You</div>
+              <div class="msg-bubble">Give me 3 email campaign ideas for gift givers</div>
+            </div>
+          </div>
+
+          <div class="msg ai">
+            <div class="avatar ai">✦</div>
+            <div class="msg-content">
+              <div class="msg-name">Claude · email-campaign-ideas</div>
+              <div class="msg-bubble">
+                Loading <code style="font-family:var(--mono);font-size:12.5px;background:var(--surface-soft);padding:1px 6px;border-radius:4px;">segment-gift-givers</code>, <code style="font-family:var(--mono);font-size:12.5px;background:var(--surface-soft);padding:1px 6px;border-radius:4px;">concept-brand-voice</code>, and 4 past gift-driven campaigns from the brain. Drafting three angles now, each using language from your actual survey responses…
+              </div>
+            </div>
+          </div>
+
+          <div class="typing-row">
+            <div class="avatar ai">✦</div>
+            <div class="typing-bubble">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="mock-input-bar">
+          <div class="mock-input">Reply to Claude…</div>
+          <div class="send">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-eyebrow">The system</div>
+      <h2 class="section-title">Two pieces of agent labor that should already be <em>automated.</em></h2>
+      <p class="section-lede">Almost every AI workflow for DTC dies in the same two places: maintaining context and maintaining tooling. We automated both.</p>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="num">01 / Context</div>
+        <h3>It organizes its own <em>brain.</em> You just feed it.</h3>
+        <p>Drop a customer survey, a campaign report, a competitor screenshot. Say "ingest this." The brain decomposes it into structured pages, updates the index, and links what's related.</p>
+        <p>Every skill loads only the pages it needs. An email skill pulls segments and brand voice. A landing page skill pulls competitors and positioning. No project file babysitting.</p>
+        <div class="demo-line">
+          <span class="arr">›</span>
+          <span class="you">ingest</span>
+          <span class="acc">customer-survey-q1</span>
+        </div>
+      </div>
+
+      <div class="pillar">
+        <div class="num">02 / Skills</div>
+        <h3>It writes its own <em>skills</em> from how you work.</h3>
+        <p>Run captains-log at the end of a session. It records what skills ran, what worked, what felt manual, what needed rework. Quietly. One command.</p>
+        <p>Schedule level-up to run weekly. It reads every brief, spots patterns, and proposes new skills with draft instruction files. It builds the toolkit you would have built yourself, if you'd had the time.</p>
+        <div class="demo-line">
+          <span class="arr">›</span>
+          <span class="you">level-up</span>
+          <span class="acc">weekly</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="flywheel-section">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-eyebrow">The flywheel</div>
+      <h2 class="section-title">Every session leaves the brain <em>smarter</em> than it found it.</h2>
+      <p class="section-lede">Most AI workflows reset to zero. This one accumulates. Knowledge stacks, skills multiply, friction compounds out instead of in.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h4>Ingest</h4>
+        <p>Templates, surveys, sales calls, reviews. The agent decomposes raw input into structured pages.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h4>Use</h4>
+        <p>Skills read the brain first, then work. Output is grounded in your actual data, not best-practice clichés.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h4>Log</h4>
+        <p>Captains-log captures what ran, what worked, what stalled. One command at the end of work.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h4>Evolve</h4>
+        <p>Level-up reads briefs weekly, spots patterns, proposes new skills tailored to your workflow.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <h4>Compound</h4>
+        <p>Brain gets richer. Toolkit gets bigger. Every future session starts further ahead.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="behind">
+  <div class="wrap">
+    <div class="behind-grid">
+      <div>
+        <div class="section-eyebrow">Under the hood</div>
+        <h2 class="section-title">No magic. Just <em>markdown</em> files and an agent that knows where to look.</h2>
+        <p class="section-lede" style="margin-bottom: 28px;">Your brain is a folder of .md files you can read, edit, and version-control. The agent is the layer that keeps it organized and learns from how you use it.</p>
+        <a href="#install" class="btn btn-ghost btn-lg">Browse the repo <span class="arr">→</span></a>
+      </div>
+      <div class="term">
+        <div class="term-bar">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span class="ttl">claude-code · acme-goods</span>
+        </div>
+        <div class="term-body"><span class="pr">›</span> <span class="you">ingest the survey in raw/</span>
+
+<span class="ou">reading raw/q1-customer-survey.csv</span>
+<span class="ou">decomposing into brain pages …</span>
+  <span class="ac">+</span> <span class="ou">updated segment-lapsed-buyers.md</span>
+  <span class="ac">+</span> <span class="ou">created segment-gift-givers.md (new segment)</span>
+  <span class="ac">+</span> <span class="ou">updated concept-brand-voice.md</span>
+  <span class="ac">+</span> <span class="ou">created source-2026-04-12-q1-survey.md</span>
+
+<span class="ok">✓ ingest complete · 2 new pages, 3 updated</span>
+
+<span class="pr">›</span> <span class="you">3 email ideas for gift-givers</span>
+
+<span class="ou">loading: segment-gift-givers, concept-brand-voice
+generating …</span>
+
+<span class="ok">✓ 3 campaigns drafted, using a phrase from your survey:</span>
+   <span class="ac">"something they didn't know they wanted"</span>
+
+<span class="dm">— two hours later —</span>
+
+<span class="pr">›</span> <span class="you">captains-log</span>
+
+<span class="ok">✓ session logged to brain/briefs/2026-04-12.md</span>
+   <span class="ou">flagged for level-up: subject-line generator?</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="inside">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-eyebrow">What's inside</div>
+      <h2 class="section-title">Four templates. Six skills. <em>One brain</em> that ties it together.</h2>
+      <p class="section-lede">Pick the template you have the best data for and start there. You don't need all four before the brain becomes useful.</p>
+    </div>
+
+    <div class="inv">
+      <div class="inv-block">
+        <div class="inv-head">
+          <h4>Templates</h4>
+          <span class="count">4 starters</span>
+        </div>
+        <div class="inv-list">
+          <div class="inv-list-item">
+            <span class="name">icp-details.md</span>
+            <span class="desc">Your customer's actual vocabulary, triggers, frustrations. Pulled from reviews, Reddit, support tickets.</span>
+          </div>
+          <div class="inv-list-item">
+            <span class="name">brand-style.md</span>
+            <span class="desc">How your brand sounds when content is working. Real patterns, not aspirational adjectives.</span>
+          </div>
+          <div class="inv-list-item">
+            <span class="name">market-positioning.md</span>
+            <span class="desc">What you own, what's contested, what you've ceded. Plus competitor snapshots.</span>
+          </div>
+          <div class="inv-list-item">
+            <span class="name">customer-journey.md</span>
+            <span class="desc">How people actually find you, what closes the sale, what makes them leave.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="inv-block">
+        <div class="inv-head">
+          <h4>Skills</h4>
+          <span class="count">6 included</span>
+        </div>
+        <div class="inv-list">
+          <div class="inv-list-item">
+            <span class="name">brain-ingest</span>
+            <span class="desc">Turns raw input into structured pages. Templates, campaign reports, customer research, competitor intel.</span>
+          </div>
+          <div class="inv-list-item">
+            <span class="name">brain-query</span>
+            <span class="desc">Answers questions across multiple pages. Cites its sources.</span>
+          </div>
+          <div class="inv-list-item">
+            <span class="name">brain-lint</span>
+            <span class="desc">Health-checks the brain. Finds stale pages, contradictions, orphans, missing cross-references.</span>
+          </div>
+          <div class="inv-list-item">
+            <span class="name">email-campaign-ideas</span>
+            <span class="desc">Generates email concepts with angles, subjects, sequences, metrics. Grounded in brain knowledge.</span>
+          </div>
+          <div class="inv-list-item">
+            <span class="name">captains-log</span>
+            <span class="desc">End-of-session brief. Captures what ran, what worked, what felt manual.</span>
+          </div>
+          <div class="inv-list-item">
+            <span class="name">level-up</span>
+            <span class="desc">Reviews briefs weekly. Proposes new skills based on patterns. Checks for duplicates.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="aud-section">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-eyebrow">Honest framing</div>
+      <h2 class="section-title">Who it's <em>for,</em> and who should skip it.</h2>
+    </div>
+
+    <div class="aud-grid">
+      <div class="aud-card">
+        <h4>Built for you if</h4>
+        <ul>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+            You run a DTC brand and already use Claude Code or Codex regularly
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+            You've felt the friction of re-explaining your brand to every new chat
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+            You have real customer data, reviews, or research collecting dust
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+            You'd rather invest an hour upfront than re-prompt every session
+          </li>
+        </ul>
+      </div>
+
+      <div class="aud-card no">
+        <h4>Probably skip this if</h4>
+        <ul>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            You want a no-code chat UI with buttons. This is files, folders, an agent.
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            You haven't tried Claude Code or Codex. Start there first.
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            You want a magic content generator. It's only as good as what you feed it.
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            Your brand is brand new with no customer data to ingest yet.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" id="install">
+  <div class="wrap">
+    <h2>Give your brand a <em>memory.</em></h2>
+    <p>Clone the repo, fill out one template, and run your first skill. The brain takes care of itself from there.</p>
+    <div class="cta-row">
+      <a href="https://github.com/YOUR-USERNAME/ecommerce-brain" class="btn btn-primary btn-lg">View on GitHub <span class="arr">→</span></a>
+      <a href="https://github.com/YOUR-USERNAME/ecommerce-brain/blob/main/README.md" class="btn btn-ghost btn-lg">Read the docs</a>
+    </div>
+    <div class="install-mini">
+      <span>git clone github.com/YOUR-USERNAME/ecommerce-brain</span>
+      <button class="copy" onclick="navigator.clipboard.writeText('git clone https://github.com/YOUR-USERNAME/ecommerce-brain'); this.innerText='Copied'; setTimeout(()=>this.innerText='Copy',1400)">Copy</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="inner">
+    <div class="copy-line">
+      <span class="logo-mark" style="width:18px;height:18px;border-radius:5px"></span>
+      <span>eCommerce Brain · MIT licensed · open source</span>
+    </div>
+    <div class="links">
+      <a href="https://github.com/YOUR-USERNAME/ecommerce-brain">GitHub</a>
+      <a href="https://github.com/YOUR-USERNAME/ecommerce-brain/issues">Issues</a>
+      <a href="#">Back to top</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
